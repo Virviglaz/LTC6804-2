@@ -40,6 +40,8 @@
  *
  * Contact Information:
  * Pavel Nadein <pavelnadein@gmail.com>
+ *
+ * @limitation: GPIO is used only in analog mode
  */
 
 #include "ltc6804.h"
@@ -563,6 +565,9 @@ int ltc6804_discharge(uint8_t cell, bool state)
 	default:
 		break;
 	}
+
+	/* This bits enabled the analog functions of GPIO */
+	cfgr[0] |=  0xF8;
 
 	write_data(WRCFG, cfgr, sizeof(cfgr));
 	return 0;
