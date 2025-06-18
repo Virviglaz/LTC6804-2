@@ -572,3 +572,39 @@ int ltc6804_discharge(uint8_t cell, bool state)
 	write_data(WRCFG, cfgr, sizeof(cfgr));
 	return 0;
 }
+
+int ltc6804_discharge_multiple(uint16_t bitmask)
+{
+	uint8_t cfgr[6];
+
+	int res = read_data(RDCFG, cfgr, sizeof(cfgr), false);
+	if (res)
+		return res;
+
+	cfgr[4] = bitmask & 0xFF;
+	cfgr[5] &= 0xF0;
+	cfgr[5] |= (bitmask >> 8) & 0x0F;
+
+	/* This bits enables analog functions of GPIO */
+	cfgr[0] |=  0xF8;
+
+	write_data(WRCFG, cfgr, sizeof(cfgr));
+	return 0;
+}
+
+int ltc6804_discharge_stop(void)
+{
+	uint8_t cfgr[6];
+
+	int res = read_data(RDCFG, cfgr, sizeof(cfgr), false);
+	if (res)
+		return res;
+
+	/* This bits enabled the analog functions of GPIO */
+	cfgr[0] |=  0xF8;
+	cfgr[4] = 0;
+	cfgr[5] &= 0x0F;
+
+	write_data(WRCFG, cfgr, sizeof(cfgr));
+	return 0;
+}

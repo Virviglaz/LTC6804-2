@@ -326,6 +326,21 @@ int ltc6804_convert_misc(misc_meas *c, enum adc_mode mode,
  */
 int ltc6804_discharge(uint8_t cell, bool state);
 
+/**
+ * @brief Enable/disable multiple cells discharge.
+ *
+ * @param bitmask		12-bit mask (1-on, 0-off).
+ * @return			0 if success, error code if error.
+ */
+int ltc6804_discharge_multiple(uint16_t bitmask);
+
+/**
+ * @brief Stop discharging and disable all loads.
+ *
+ * @return			0 if success, error code if error.
+ */
+int ltc6804_discharge_stop(void);
+
 #ifdef __cplusplus
 }
 #endif
