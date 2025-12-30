@@ -4,7 +4,7 @@
  *
  * MIT License
  *
- * Copyright (c) 2022 Pavel Nadein
+ * Copyright (c) 2022-2025 Pavel Nadein
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -49,297 +49,304 @@
 #include <stdbool.h>
 
 #ifdef __cplusplus
-extern "C" {
+extern "C"
+{
 #endif
 
-/**
- * @brief Interface function. Enables the communitaction with the IC.
- *
- * @param tx	Pointer to transfer data.
- * @param rx	Pointer to received data.
- * @param size	Size of data in bytes.
- *
- * @note This function should extablish the communitation. Normally SPI used.
- */
-typedef void (*io_func_t)(uint8_t *tx, uint8_t *rx, uint32_t size);
-
-/**
- * @brief Delay implementation function for polling method.
- */
-typedef void (*delay_ms_func)(uint32_t ms);
-
-/**
- * @brief Enum defines the discharge timeout.
- */
-typedef enum {
-	TIMEOUT_DISABLED,
-	TIMEOUT_30_SECONDS,
-	TIMEOUT_1_MINUTE,
-	TIMEOUT_2_MINUTES,
-	TIMEOUT_3_MINUTES,
-	TIMEOUT_4_MINUTES,
-	TIMEOUT_5_MINUTES,
-	TIMEOUT_10_MINUTES,
-	TIMEOUT_15_MINUTES,
-	TIMEOUT_20_MINUTES,
-	TIMEOUT_30_MINUTES,
-	TIMEOUT_40_MINUTES,
-	TIMEOUT_60_MINUTES,
-	TIMEOUT_75_MINUTES,
-	TIMEOUT_90_MINUTES,
-	TIMEOUT_120_MINUTES,
-} discharge_timeout_min;
-
-/**
- * @brief LTC6804-2 configuration settings.
- */
-typedef struct {
-	/* Each cell undervoltage threshold value in volts */
-	double under_voltage;
-
-	/* Each cell overvoltage threshold value in volts */
-	double over_voltage;
-
-	/* Discharge timeout */
-	discharge_timeout_min timeout;
-
-	/* Enables the ADC, wake-up the IC */
-	bool refon;
-
-	/*
-	 * ADC Mode Option:
+	/**
+	 * @brief Interface function. Enables the communication with the IC.
 	 *
-	 * 0 -> Selects Modes 27kHz, 7kHz or 26Hz with MD[1:0] Bits (Default).
-	 * 1 -> Selects Modes 14kHz, 3kHz or 2kHz with MD[1:0] Bits.
+	 * @param tx	Pointer to transfer data.
+	 * @param rx	Pointer to received data.
+	 * @param size	Size of data in bytes.
+	 *
+	 * @note This function should establish the communication. Normally SPI used.
 	 */
-	bool fast_adc;
-} ltc6804_init_conf;
+	typedef void (*io_func_t)(uint8_t *tx, uint8_t *rx, uint32_t size);
 
-/**
- * @brief Enum specifies the ADC mode (fast/normal/filtered).
- */
-enum adc_mode {
-	ADC_27_14_kHz = 1,
-	ADC_7_3_kHz = 2,
-	ADC_26Hz_2kHz = 3,
-};
+	/**
+	 * @brief Delay implementation function for polling method.
+	 */
+	typedef void (*delay_ms_func)(uint32_t ms);
 
-/** Miscellaneous ADC conversion results struct. */
-typedef struct {
-	double sum_meas;		/* SOC: Sum of Cells Measurement */
-	double die_temp;		/* ITMP: Internal Die Temperature */
-	double analog_supp_v;		/* Analog Power Supply Voltage */
-	double digital_supp_v;		/* Digital Power Supply Voltage */
-	bool cell_overvoltage[12];	/* overvoltage flag */
-	bool cell_undervoltage[12];	/* undervoltage flag */
-	uint8_t chip_revision;		/* 4-bits chip revision */
-} misc_meas;
+	/**
+	 * @brief Enum defines the discharge timeout.
+	 */
+	typedef enum
+	{
+		TIMEOUT_DISABLED,
+		TIMEOUT_30_SECONDS,
+		TIMEOUT_1_MINUTE,
+		TIMEOUT_2_MINUTES,
+		TIMEOUT_3_MINUTES,
+		TIMEOUT_4_MINUTES,
+		TIMEOUT_5_MINUTES,
+		TIMEOUT_10_MINUTES,
+		TIMEOUT_15_MINUTES,
+		TIMEOUT_20_MINUTES,
+		TIMEOUT_30_MINUTES,
+		TIMEOUT_40_MINUTES,
+		TIMEOUT_60_MINUTES,
+		TIMEOUT_75_MINUTES,
+		TIMEOUT_90_MINUTES,
+		TIMEOUT_120_MINUTES,
+	} discharge_timeout_min;
 
-/** Cell Voltages ADC conversion results struct (ADCV). */
-typedef struct {
-	double cell[12];		/* CxV: Cell voltages */
-} cell_meas;
+	/**
+	 * @brief LTC6804-2 configuration settings.
+	 */
+	typedef struct
+	{
+		/* Each cell under-voltage threshold value in volts */
+		double under_voltage;
 
-/** Combined ADC conversion results struct (ADCVAX). */
-typedef struct {
-	double cell[12];		/* CxV: Cell voltages */
-	double gpio[2];			/* GxV: GPIO voltages */
-} comb_meas;
+		/* Each cell over-voltage threshold value in volts */
+		double over_voltage;
 
-/** Auxiliary ADC conversion results struct (ADAX). */
-typedef struct {
-	double gpio[5];			/* GxV: GPIO voltages */
-	double ref_voltage;		/* REF: 2nd Reference Voltage */
-} aux_meas;
+		/* Discharge timeout */
+		discharge_timeout_min timeout;
 
-/**
- * @brief Initialize the SPI and optionally initialize the IC.
- *
- * @Note: This function can be called multiple times to reinitialize the IC.
- *
- * @param cfg Pointer to configuration struct. Use NULL if not used.
- * @param io_func	Pointer to interface function (normally SPI).
- */
-int ltc6804_init(ltc6804_init_conf *cfg, io_func_t io_func, delay_ms_func wait);
+		/* Enables the ADC, wake-up the IC */
+		bool refon;
 
-/**
- * @brief Starts the ADC conversion for all channels including AUX and REF.
- *
- * @param mode			ADC mode.
- * @param discharge_en 		Allow discharge during the measure.
- */
-void ltc6804_start_cell_adc_conv(enum adc_mode mode, bool discharge_en);
+		/*
+		 * ADC Mode Option:
+		 *
+		 * 0 -> Selects Modes 27kHz, 7kHz or 26Hz with MD[1:0] Bits (Default).
+		 * 1 -> Selects Modes 14kHz, 3kHz or 2kHz with MD[1:0] Bits.
+		 */
+		bool fast_adc;
+	} ltc6804_init_conf;
 
-/**
- * @brief Start GPIO(AUX) inputs ADC conversion.
- *
- * @param mode			ADC mode.
- */
-void ltc6804_start_gpio_adc_conv(enum adc_mode mode);
+	/**
+	 * @brief Enum specifies the ADC mode (fast/normal/filtered).
+	 */
+	enum adc_mode
+	{
+		ADC_27_14_kHz = 1,
+		ADC_7_3_kHz = 2,
+		ADC_26Hz_2kHz = 3,
+	};
 
-/**
- * @brief Start combined ADC conversion.
- *
- * @param mode			ADC mode.
- */
-void ltc6804_start_combined_adc_conv(enum adc_mode mode, bool discharge_en);
+	/** Miscellaneous ADC conversion results struct. */
+	typedef struct
+	{
+		double sum_meas;			/* SOC: Sum of Cells Measurement */
+		double die_temp;			/* ITMP: Internal Die Temperature */
+		double analog_supp_v;		/* Analog Power Supply Voltage */
+		double digital_supp_v;		/* Digital Power Supply Voltage */
+		bool cell_overvoltage[12];	/* ove-rvoltage flag */
+		bool cell_undervoltage[12]; /* under-voltage flag */
+		uint8_t chip_revision;		/* 4-bits chip revision */
+	} misc_meas;
 
-/**
- * @brief Start internal parameters ADC conversion (ADSTAT).
- *
- * @param mode			ADC mode.
- */
-void ltc6804_start_int_params_adc_conv(enum adc_mode mode);
+	/** Cell Voltages ADC conversion results struct (ADCV). */
+	typedef struct
+	{
+		double cell[12]; /* CxV: Cell voltages */
+	} cell_meas;
 
-/**
- * @brief Check ADC conversion is node.
- *
- * @return true			Result is ready.
- * @return false		Conversion is in progress.
- */
-bool ltc6804_check_conversion_done(void);
+	/** Combined ADC conversion results struct (ADCVAX). */
+	typedef struct
+	{
+		double cell[12]; /* CxV: Cell voltages */
+		double gpio[2];	 /* GxV: GPIO voltages */
+	} comb_meas;
 
-/**
- * @brief Wait for ADC conversion is done.
- *
- * @param poll_interval_ms	Poll interval in ms.
- * @return true			Result is ready.
- * @return false		Conversion is in progress.
- *
- * @note This function performs only 10 attempts to read the ready flag.
- */
-bool ltc6804_wait_conversion_done(uint32_t poll_interval_ms);
+	/** Auxiliary ADC conversion results struct (ADAX). */
+	typedef struct
+	{
+		double gpio[5];		/* GxV: GPIO voltages */
+		double ref_voltage; /* REF: 2nd Reference Voltage */
+	} aux_meas;
 
-/**
- * @brief Reset cell conversion results registers.
- */
-void ltc6804_clear_cell_voltages(void);
+	/**
+	 * @brief Initialize the SPI and optionally initialize the IC.
+	 *
+	 * @Note: This function can be called multiple times to reinitialize the IC.
+	 *
+	 * @param cfg Pointer to configuration struct. Use NULL if not used.
+	 * @param io_func	Pointer to interface function (normally SPI).
+	 */
+	int ltc6804_init(ltc6804_init_conf *cfg, io_func_t io_func, delay_ms_func wait);
 
-/**
- * @brief Reset GPIO(AUX) conversion results registers.
- */
-void ltc6804_clear_gpio_voltages(void);
+	/**
+	 * @brief Starts the ADC conversion for all channels including AUX and REF.
+	 *
+	 * @param mode			ADC mode.
+	 * @param discharge_en 		Allow discharge during the measure.
+	 */
+	void ltc6804_start_cell_adc_conv(enum adc_mode mode, bool discharge_en);
 
-/**
- * @brief Reset status register.
- */
-void ltc6804_clear_status_register(void);
+	/**
+	 * @brief Start GPIO(AUX) inputs ADC conversion.
+	 *
+	 * @param mode			ADC mode.
+	 */
+	void ltc6804_start_gpio_adc_conv(enum adc_mode mode);
 
-/**
- * @brief Reset all status registers.
- */
-void ltc6804_clear_all(void);
+	/**
+	 * @brief Start combined ADC conversion.
+	 *
+	 * @param mode			ADC mode.
+	 */
+	void ltc6804_start_combined_adc_conv(enum adc_mode mode, bool discharge_en);
 
-/**
- * @brief Read CELLs voltages.
- * @note Non-wating call.
- *
- * @param c			Pointer to cell_meas data struct.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_read_cells(cell_meas *c);
+	/**
+	 * @brief Start internal parameters ADC conversion (ADSTAT).
+	 *
+	 * @param mode			ADC mode.
+	 */
+	void ltc6804_start_int_params_adc_conv(enum adc_mode mode);
 
-/**
- * @brief Read CELLs voltages and 2 GPIOs.
- * @note Non-wating call.
- *
- * @param c			Pointer to comb_meas data struct.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_read_comb(comb_meas *c);
+	/**
+	 * @brief Check ADC conversion is node.
+	 *
+	 * @return true			Result is ready.
+	 * @return false		Conversion is in progress.
+	 */
+	bool ltc6804_check_conversion_done(void);
 
-/**
- * @brief Read GPIO voltages and second reference voltage.
- * @note Non-wating call.
- *
- * @param c			Pointer to aux_meas data struct.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_read_aux(aux_meas *c);
+	/**
+	 * @brief Wait for ADC conversion is done.
+	 *
+	 * @param poll_interval_ms	Poll interval in ms.
+	 * @return true			Result is ready.
+	 * @return false		Conversion is in progress.
+	 *
+	 * @note This function performs only 10 attempts to read the ready flag.
+	 */
+	bool ltc6804_wait_conversion_done(uint32_t poll_interval_ms);
 
-/**
- * @brief Read miscellaneous ADC settings.
- * @note Non-wating call.
- *
- * @param c			Pointer to misc_meas struct.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_read_int_params(misc_meas *c);
+	/**
+	 * @brief Reset cell conversion results registers.
+	 */
+	void ltc6804_clear_cell_voltages(void);
 
-/**
- * @brief Start 12-CELLs ADC conversion and wait for result.
- * @note This is a waiting call.
- *
- * @param c			Pointer to cell_meas struct to store the data.
- * @param mode			ADC mode
- * @param discharge_en		Enable the ballancing discharge during measure.
- * @param poll_interval_ms	Polling interval in ms.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_convert_cell(cell_meas *c, enum adc_mode mode, bool discharge_en,
-	uint32_t poll_interval_ms);
+	/**
+	 * @brief Reset GPIO(AUX) conversion results registers.
+	 */
+	void ltc6804_clear_gpio_voltages(void);
 
-/**
- * @brief Start combined ADC conversion (CELLs + 2 GPIOs) and wait for result.
- * @note This is a waiting call.
- *
- * @param c			Pointer to comb_meas struct to store the data.
- * @param mode			ADC mode
- * @param discharge_en		Enable the ballancing discharge during measure.
- * @param poll_interval_ms	Polling interval in ms.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_convert_comb(comb_meas *c, enum adc_mode mode, bool discharge_en,
-	uint32_t poll_interval_ms);
+	/**
+	 * @brief Reset status register.
+	 */
+	void ltc6804_clear_status_register(void);
 
+	/**
+	 * @brief Reset all status registers.
+	 */
+	void ltc6804_clear_all(void);
 
-/**
- * @brief Start aux ADC conversion (5 GPIOs + II-reference) and wait for result.
- * @note This is a waiting call.
- *
- * @param c			Pointer to aux_meas struct to store the data.
- * @param mode			ADC mode
- * @param poll_interval_ms	Polling interval in ms.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_convert_aux(aux_meas *c, enum adc_mode mode,
-	uint32_t poll_interval_ms);
+	/**
+	 * @brief Read CELLs voltages.
+	 * @note Non-waiting call.
+	 *
+	 * @param c			Pointer to cell_meas data struct.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_read_cells(cell_meas *c);
 
-/**
- * @brief Start internal params ADC conversion (ADSTAT).
- * @note This is a waiting call.
- *
- * @param c			Pointer to misc_meas struct to store the data.
- * @param mode			ADC mode
- * @param poll_interval_ms	Polling interval in ms.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_convert_misc(misc_meas *c, enum adc_mode mode,
-	uint32_t poll_interval_ms);
+	/**
+	 * @brief Read CELLs voltages and 2 GPIOs.
+	 * @note Non-waiting call.
+	 *
+	 * @param c			Pointer to comb_meas data struct.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_read_comb(comb_meas *c);
 
-/**
- * @brief Enables/disables the discharging per cell.
- *
- * @param cell 			0..11 cell number.
- * @param state			true enables the discharge, false disables.
- * @return int			0 if success, error code if error.
- */
-int ltc6804_discharge(uint8_t cell, bool state);
+	/**
+	 * @brief Read GPIO voltages and second reference voltage.
+	 * @note Non-waiting call.
+	 *
+	 * @param c			Pointer to aux_meas data struct.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_read_aux(aux_meas *c);
 
-/**
- * @brief Enable/disable multiple cells discharge.
- *
- * @param bitmask		12-bit mask (1-on, 0-off).
- * @return			0 if success, error code if error.
- */
-int ltc6804_discharge_multiple(uint16_t bitmask);
+	/**
+	 * @brief Read miscellaneous ADC settings.
+	 * @note Non-waiting call.
+	 *
+	 * @param c			Pointer to misc_meas struct.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_read_int_params(misc_meas *c);
 
-/**
- * @brief Stop discharging and disable all loads.
- *
- * @return			0 if success, error code if error.
- */
-int ltc6804_discharge_stop(void);
+	/**
+	 * @brief Start 12-CELLs ADC conversion and wait for result.
+	 * @note This is a waiting call.
+	 *
+	 * @param c			Pointer to cell_meas struct to store the data.
+	 * @param mode			ADC mode
+	 * @param discharge_en		Enable the balancing discharge during measure.
+	 * @param poll_interval_ms	Polling interval in ms.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_convert_cell(cell_meas *c, enum adc_mode mode, bool discharge_en,
+							 uint32_t poll_interval_ms);
+
+	/**
+	 * @brief Start combined ADC conversion (CELLs + 2 GPIOs) and wait for result.
+	 * @note This is a waiting call.
+	 *
+	 * @param c			Pointer to comb_meas struct to store the data.
+	 * @param mode			ADC mode
+	 * @param discharge_en		Enable the balancing discharge during measure.
+	 * @param poll_interval_ms	Polling interval in ms.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_convert_comb(comb_meas *c, enum adc_mode mode, bool discharge_en,
+							 uint32_t poll_interval_ms);
+
+	/**
+	 * @brief Start aux ADC conversion (5 GPIOs + II-reference) and wait for result.
+	 * @note This is a waiting call.
+	 *
+	 * @param c			Pointer to aux_meas struct to store the data.
+	 * @param mode			ADC mode
+	 * @param poll_interval_ms	Polling interval in ms.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_convert_aux(aux_meas *c, enum adc_mode mode,
+							uint32_t poll_interval_ms);
+
+	/**
+	 * @brief Start internal params ADC conversion (ADSTAT).
+	 * @note This is a waiting call.
+	 *
+	 * @param c			Pointer to misc_meas struct to store the data.
+	 * @param mode			ADC mode
+	 * @param poll_interval_ms	Polling interval in ms.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_convert_misc(misc_meas *c, enum adc_mode mode,
+							 uint32_t poll_interval_ms);
+
+	/**
+	 * @brief Enables/disables the discharging of single cell.
+	 *
+	 * @param cell 			0..11 cell number.
+	 * @param state			true enables the discharge, false disables.
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_discharge(uint8_t cell, bool state);
+
+	/**
+	 * @brief Enable/disable multiple cells discharge.
+	 *
+	 * @param bitmask		12-bit mask (1-on, 0-off).
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_discharge_multiple(uint16_t bitmask);
+
+	/**
+	 * @brief Stop discharging and disable all loads.
+	 *
+	 * @return			0 if success, error code if error.
+	 */
+	int ltc6804_discharge_stop(void);
 
 #ifdef __cplusplus
 }
